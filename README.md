@@ -1,6 +1,6 @@
 # Игра Сапёр
 
-Online пример: http://zhenik.bget.ru/saper/  
+Online пример: [https://ipatov.github.io/sapper/](https://ipatov.github.io/sapper/)
 
 ## Чеклист toDo. Upd: 01.09.2024
 - [x] Основная логика игры
@@ -16,4 +16,4 @@ Online пример: http://zhenik.bget.ru/saper/
 - [ ] Управление константами перенести в пользовательское меню
 - [ ] Структуру файлов сделать, пока месево внутри index.html
 - [ ] Readme.md в порядок привести
-- [ ] Пример залить на домен с https
+- [x] Пример залить на домен с https
