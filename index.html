@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            padding: 20px;
+            margin: 0;
+        }
+
+        #field {
+            position: relative;
+            padding: 0;
+            width: 600px;
+            height: 600px;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            border: 1px solid black;
+        }
+
+        #field span {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            box-sizing: border-box;
+            border: 1px solid;
+            cursor: pointer;
+            justify-items: center;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            background-image: url(grass.png);
+            background-size: 100% auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="field"></div>
+
+    <script>
+        // игровое поле
+        const fieldDIV = document.getElementById('field');
+
+        // мины
+        const minesCount = 10;
+        // размер поля
+        const fieldWidth = 10;
+        const fieldHeight = 10;
+
+        // рандомные мины
+        const mines = [];
+        for (let i = 0; i < minesCount; i++) {
+            const rndW = Math.floor((Math.random() * fieldWidth) + 0);
+            const rndH = Math.floor((Math.random() * fieldHeight) + 0);
+            mines.push([rndW, rndH]);
+        }
+
+        // матрица поля
+        const field = Array.from({ length: fieldWidth }, () => Array.from({ length: fieldHeight }, () => 0));
+        console.log("field clear:", field);
+
+        // расстановка подсказок про мины
+        for (const [x, y] of mines) {
+            field[x][y] = '*';
+            for (let i = Math.max(0, x - 1); i <= Math.min(fieldWidth - 1, x + 1); i++) {
+                for (let j = Math.max(0, y - 1); j <= Math.min(fieldHeight - 1, y + 1); j++) {
+                    if (field[i][j] !== '*') {
+                        field[i][j]++;
+                    }
+                }
+            }
+        }
+        
+        // отрисовка поля
+        for (let i = 0; i < fieldWidth; i++) {
+            for (let j = 0; j < fieldHeight; j++) {
+                const block = document.createElement('span');
+                block.dataset.mines = field[i][j];
+                block.dataset.i = i;
+                block.dataset.j = j;
+                block.addEventListener('click', function () {
+                    clickBlock(this);
+                });
+                fieldDIV.appendChild(block);
+            }
+        }
+
+        // клик по блоку
+        function clickBlock(block) {
+            const mines = block.dataset.mines;
+            const showI = parseInt(block.dataset.i);
+            const showJ = parseInt(block.dataset.j);
+            console.log(mines);
+            if (mines != "*") {
+                if (mines > 0) {
+                    block.innerText = mines;
+                    setColor(block, mines);
+                } else {
+                    // поиск всех соседних пустых ячеек
+                    const allZeros = findAllZeroes(field, showI, showJ);
+                    // отрисовка пустот
+                    for (let i = 0; i < allZeros.length; i++) {
+                        const showBlock = document.querySelector(`span[data-i="${allZeros[i][0]}"][data-j="${allZeros[i][1]}"]`);
+                        showBlock.innerText = 0;
+                        setColor(showBlock, 0);
+                    }
+                }
+                if (isFinish()) {
+                    alert("Победа!");
+                }
+            } else {
+                // проигрыш
+                // TODO добавить остановку игры
+                setColor(block, "*");
+                alert("Потрачено :(");
+            }
+            block.innerText = mines;
+        }
+
+        // проверка победы
+        function isFinish() {
+            for (let i = 0; i < fieldWidth; i++) {
+                for (let j = 0; j < fieldHeight; j++) {
+                    const showBlock = document.querySelector(`span[data-i="${i}"][data-j="${j}"]`);
+                    if (showBlock.dataset.mines != "*" && showBlock.innerHTML.trim() == "") {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // закрашивание ячеек
+        function setColor(block, mines) {
+            // TODO сделать расцветку для всех чисел от 1 до 8
+            block.style.backgroundImage = 'none';
+            if (mines == 0) {
+                block.style.backgroundColor = "#e0dfdf";
+            } else if (mines == "*") {
+                // block.style.backgroundColor = "red";
+                block.style.backgroundImage = 'url(mina.png)';
+            } else if (mines == 1) {
+                block.style.backgroundColor = "#86c3f4";
+            } else {
+                block.style.backgroundColor = "#86c3f4";
+
+            }
+        }
+
+        // поиск всех соседних пустых зон
+        function findAllZeroes(matrix, startRow, startCol) {
+            const rows = matrix.length;
+            const cols = matrix[0].length;
+            // направление поиска
+            const directions = [
+                [-1, 0], // вверх
+                [0, -1], // влево
+                [1, 0],  // вниз
+                [0, 1]   // вправо
+            ];
+            const visited = Array.from({ length: rows }, () => Array(cols).fill(false));
+            const result = [];
+
+            // рекурсивный поиск в глубину
+            function dfs(row, col) {
+                if (row < 0 || row >= rows || col < 0 || col >= cols || matrix[row][col] !== 0 || visited[row][col]) {
+                    return;
+                }
+                visited[row][col] = true;
+                result.push([row, col]);
+                for (const [dx, dy] of directions) {
+                    dfs(row + dx, col + dy);
+                }
+            }
+            dfs(startRow, startCol);
+            return result;
+        }
+    </script>
+</body>
+
+</html>
