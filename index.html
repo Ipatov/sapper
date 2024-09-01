@@ -51,6 +51,9 @@
         const fieldWidth = 10;
         const fieldHeight = 10;
 
+        // статус активности игры
+        let isActiveGame = true;
+
         // рандомные мины
         const mines = [];
         for (let i = 0; i < minesCount; i++) {
@@ -61,7 +64,6 @@
 
         // матрица поля
         const field = Array.from({ length: fieldWidth }, () => Array.from({ length: fieldHeight }, () => 0));
-        console.log("field clear:", field);
 
         // расстановка подсказок про мины
         for (const [x, y] of mines) {
@@ -74,7 +76,7 @@
                 }
             }
         }
-        
+
         // отрисовка поля
         for (let i = 0; i < fieldWidth; i++) {
             for (let j = 0; j < fieldHeight; j++) {
@@ -91,10 +93,15 @@
 
         // клик по блоку
         function clickBlock(block) {
+            if(!isActiveGame){
+                // игра закончена уже
+                return true;
+            }
+            
             const mines = block.dataset.mines;
             const showI = parseInt(block.dataset.i);
             const showJ = parseInt(block.dataset.j);
-            console.log(mines);
+
             if (mines != "*") {
                 if (mines > 0) {
                     block.innerText = mines;
@@ -109,16 +116,23 @@
                         setColor(showBlock, 0);
                     }
                 }
+                block.innerText = mines;
                 if (isFinish()) {
+                    isActiveGame = false;
                     alert("Победа!");
                 }
             } else {
                 // проигрыш
-                // TODO добавить остановку игры
-                setColor(block, "*");
+                isActiveGame = false;
+
+                // показ всех мин
+                const minesBlocks = document.querySelectorAll(`span[data-mines="*"]`);
+                for (let i = 0; i < minesBlocks.length; i++) {
+                    const oneMineBlock = minesBlocks[i];
+                    setColor(oneMineBlock, "*");
+                }
                 alert("Потрачено :(");
             }
-            block.innerText = mines;
         }
 
         // проверка победы
