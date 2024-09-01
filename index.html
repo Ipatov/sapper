@@ -17,7 +17,7 @@
             display: grid;
             grid-template-columns: repeat(10, 1fr);
             grid-template-rows: repeat(10, 1fr);
-            border: 1px solid black;
+            border: 1px solid #000;
         }
 
         #field span {
@@ -26,7 +26,7 @@
             height: 100%;
             text-align: center;
             box-sizing: border-box;
-            border: 1px solid;
+            border: 1px solid #000;
             cursor: pointer;
             justify-items: center;
             justify-content: center;
@@ -34,6 +34,7 @@
             font-size: 20px;
             background-image: url(grass.png);
             background-size: 100% auto;
+            color: #fff;
         }
     </style>
 </head>
@@ -45,37 +46,48 @@
         // игровое поле
         const fieldDIV = document.getElementById('field');
 
-        // мины
-        const minesCount = 10;
-        // размер поля
+        // количество мин
+        const totalMines = 10;
+        // ширина поля
         const fieldWidth = 10;
+        // высота поля
         const fieldHeight = 10;
         // TODO в стилях обновления размера поля обновлять
 
         // статус активности игры
-        let isActiveGame = true;
+        let isGameActive = true;
 
         // рандомные мины
         const mines = [];
-        // TODO проверку на дубли генерации добавить
-        for (let i = 0; i < minesCount; i++) {
-            const rndW = Math.floor((Math.random() * fieldWidth) + 0);
-            const rndH = Math.floor((Math.random() * fieldHeight) + 0);
-            mines.push([rndW, rndH]);
+        // генерация уникальных координат мин
+        while (mines.length < totalMines) {
+            const randomWidth = Math.floor((Math.random() * fieldWidth) + 0);
+            const randomHeight = Math.floor((Math.random() * fieldHeight) + 0);
+            const newMine = [randomWidth, randomHeight];
+            // проверка на уникальность координат при генерации
+            if (!mines.some(mine => mine[0] === randomWidth && mine[1] === randomHeight)) {
+                mines.push(newMine);
+            }
         }
 
         // матрица поля
-        const field = Array.from({ length: fieldWidth }, () => Array.from({ length: fieldHeight }, () => 0));
+        const fieldMatrix = Array.from({ length: fieldWidth }, () => Array.from({ length: fieldHeight }, () => 0));
 
-        // расстановка подсказок про мины
-        // TODO считать только вокруг поля - максимум 8
+        // расстановка подсказок-чисел про мины вокруг поля
+        // и расстановка самих мин
         for (const [x, y] of mines) {
-            field[x][y] = '*';
-            for (let i = Math.max(0, x - 1); i <= Math.min(fieldWidth - 1, x + 1); i++) {
-                for (let j = Math.max(0, y - 1); j <= Math.min(fieldHeight - 1, y + 1); j++) {
-                    if (field[i][j] !== '*') {
-                        field[i][j]++;
-                    }
+            fieldMatrix[x][y] = '*';
+            // направление поиска
+            const directions = [
+                [-1, -1], [-1, 0], [-1, 1],
+                [0, -1], [0, 1],
+                [1, -1], [1, 0], [1, 1]
+            ];
+            for (const [dx, dy] of directions) {
+                const newX = x + dx;
+                const newY = y + dy;
+                if (newX >= 0 && newX < fieldWidth && newY >= 0 && newY < fieldHeight && fieldMatrix[newX][newY] !== '*') {
+                    fieldMatrix[newX][newY]++;
                 }
             }
         }
@@ -83,92 +95,96 @@
         // отрисовка поля
         for (let i = 0; i < fieldWidth; i++) {
             for (let j = 0; j < fieldHeight; j++) {
-                const block = document.createElement('span');
-                block.dataset.mines = field[i][j];
-                block.dataset.i = i;
-                block.dataset.j = j;
-                block.addEventListener('click', function () {
-                    clickBlock(this);
+                const cell = document.createElement('span');
+                cell.dataset.mines = fieldMatrix[i][j];
+                cell.dataset.i = i;
+                cell.dataset.j = j;
+                cell.addEventListener('click', function () {
+                    handleClick(this);
                 });
-                fieldDIV.appendChild(block);
+                fieldDIV.appendChild(cell);
             }
         }
 
         // клик по блоку
-        function clickBlock(block) {
-            if(!isActiveGame){
+        function handleClick(cell) {
+            if (!isGameActive) {
                 // игра закончена уже
                 return true;
             }
-            
-            const mines = block.dataset.mines;
-            const showI = parseInt(block.dataset.i);
-            const showJ = parseInt(block.dataset.j);
+
+            const mines = cell.dataset.mines;
+            const cellRow = parseInt(cell.dataset.i);
+            const cellCol = parseInt(cell.dataset.j);
 
             if (mines != "*") {
                 if (mines > 0) {
-                    block.innerText = mines;
-                    setColor(block, mines);
+                    cell.innerText = mines;
+                    setColor(cell, mines);
                 } else {
                     // поиск всех соседних пустых ячеек
-                    const allZeros = findAllZeroes(field, showI, showJ);
+                    const allEmptyCells = findAllEmptyCells(fieldMatrix, cellRow, cellCol);
                     // отрисовка пустот
-                    for (let i = 0; i < allZeros.length; i++) {
-                        const showBlock = document.querySelector(`span[data-i="${allZeros[i][0]}"][data-j="${allZeros[i][1]}"]`);
-                        showBlock.innerText = 0;
-                        setColor(showBlock, 0);
+                    for (let i = 0; i < allEmptyCells.length; i++) {
+                        const emptyCell = document.querySelector(`span[data-i="${allEmptyCells[i][0]}"][data-j="${allEmptyCells[i][1]}"]`);
+                        emptyCell.innerText = 0;
+                        setColor(emptyCell, 0);
                     }
                 }
-                block.innerText = mines;
-                if (isFinish()) {
-                    isActiveGame = false;
+                cell.innerText = mines;
+                if (checkWin()) {
+                    isGameActive = false;
                     alert("Победа!");
                 }
             } else {
                 // проигрыш
-                isActiveGame = false;
+                isGameActive = false;
 
                 // показ всех мин
-                const minesBlocks = document.querySelectorAll(`span[data-mines="*"]`);
-                for (let i = 0; i < minesBlocks.length; i++) {
-                    const oneMineBlock = minesBlocks[i];
-                    setColor(oneMineBlock, "*");
+                const mineCells = document.querySelectorAll(`span[data-mines="*"]`);
+                for (let i = 0; i < mineCells.length; i++) {
+                    const mineCell = mineCells[i];
+                    setColor(mineCell, "*");
                 }
                 alert("Потрачено :(");
             }
         }
 
         // проверка победы
-        function isFinish() {
-            for (let i = 0; i < fieldWidth; i++) {
-                for (let j = 0; j < fieldHeight; j++) {
-                    const showBlock = document.querySelector(`span[data-i="${i}"][data-j="${j}"]`);
-                    if (showBlock.dataset.mines != "*" && showBlock.innerHTML.trim() == "") {
-                        return false;
-                    }
+        function checkWin() {
+            const cells = document.querySelectorAll('span[data-mines]');
+            for (const cell of cells) {
+                if (cell.dataset.mines != "*" && cell.innerHTML.trim() == "") {
+                    return false;
                 }
             }
             return true;
         }
 
         // закрашивание ячеек
-        function setColor(block, mines) {
-            block.style.backgroundImage = 'none';
+        function setColor(cell, mines) {
+            cell.style.backgroundImage = 'none';
             if (mines == 0) {
-                block.style.backgroundColor = "#e0dfdf";
+                cell.style.backgroundColor = "#e0dfdf";
             } else if (mines == "*") {
-                // block.style.backgroundColor = "red";
-                block.style.backgroundImage = 'url(mina.png)';
-            } else if (mines == 1) {
-                block.style.backgroundColor = "#86c3f4";
+                cell.style.backgroundImage = 'url(mina.png)';
             } else {
-                // TODO сделать расцветку для всех чисел от 1 до 8
-                block.style.backgroundColor = "#86c3f4";
+                const colors = {
+                    1: "#86c3f4",
+                    2: "#6ba9e0",
+                    3: "#4f8fcc",
+                    4: "#3475b8",
+                    5: "#195ba4",
+                    6: "#004190",
+                    7: "#00377c",
+                    8: "#002d68"
+                };
+                cell.style.backgroundColor = colors[mines] || "#86c3f4";
             }
         }
 
         // поиск всех соседних пустых зон
-        function findAllZeroes(matrix, startRow, startCol) {
+        function findAllEmptyCells(matrix, startRow, startCol) {
             const rows = matrix.length;
             const cols = matrix[0].length;
             // направление поиска
