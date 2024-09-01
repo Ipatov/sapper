@@ -30,11 +30,13 @@ export default class Sapper {
         this.createFieldMatrix();
         this.placeMinesAndHints();
         this.renderField();
+        this.setFieldStyles();
         this.startTimer();
     }
 
-    // Генерация мин на поле и настройка стилей поля
+    // Генерация мин на поле
     generateMines() {
+        this.mines = [];
         while (this.mines.length < this.totalMines) {
             const randomWidth = Math.floor(Math.random() * this.fieldWidth);
             const randomHeight = Math.floor(Math.random() * this.fieldHeight);
@@ -43,12 +45,16 @@ export default class Sapper {
                 this.mines.push(newMine);
             }
         }
-        
-        // Добавление стилей для поля
-        this.fieldDIV.style.gridTemplateColumns = `repeat(${this.fieldWidth}, 1fr)`;
-        this.fieldDIV.style.gridTemplateRows = `repeat(${this.fieldHeight}, 1fr)`;
-        this.fieldDIV.style.width = `${this.fieldWidth * 60}px`;
-        this.fieldDIV.style.height = `${this.fieldHeight * 60}px`;
+    }
+
+    // Добавление стилей для поля
+    setFieldStyles() {
+        if (this.fieldDIV) {
+            this.fieldDIV.style.gridTemplateColumns = `repeat(${this.fieldWidth}, 1fr)`;
+            this.fieldDIV.style.gridTemplateRows = `repeat(${this.fieldHeight}, 1fr)`;
+            this.fieldDIV.style.width = `${this.fieldWidth * 60}px`;
+            this.fieldDIV.style.height = `${this.fieldHeight * 60}px`;
+        }
     }
 
     // Создание матрицы поля

@@ -20,6 +20,11 @@ npm run start
 npm run build
 ```
 
+#### Тесты
+```
+npm run test
+```
+
 
 ## Чеклист toDo. Upd: 01.09.2024
 - [x] Основная логика игры
