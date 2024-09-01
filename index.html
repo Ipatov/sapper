@@ -50,12 +50,14 @@
         // размер поля
         const fieldWidth = 10;
         const fieldHeight = 10;
+        // TODO в стилях обновления размера поля обновлять
 
         // статус активности игры
         let isActiveGame = true;
 
         // рандомные мины
         const mines = [];
+        // TODO проверку на дубли генерации добавить
         for (let i = 0; i < minesCount; i++) {
             const rndW = Math.floor((Math.random() * fieldWidth) + 0);
             const rndH = Math.floor((Math.random() * fieldHeight) + 0);
@@ -66,6 +68,7 @@
         const field = Array.from({ length: fieldWidth }, () => Array.from({ length: fieldHeight }, () => 0));
 
         // расстановка подсказок про мины
+        // TODO считать только вокруг поля - максимум 8
         for (const [x, y] of mines) {
             field[x][y] = '*';
             for (let i = Math.max(0, x - 1); i <= Math.min(fieldWidth - 1, x + 1); i++) {
@@ -150,7 +153,6 @@
 
         // закрашивание ячеек
         function setColor(block, mines) {
-            // TODO сделать расцветку для всех чисел от 1 до 8
             block.style.backgroundImage = 'none';
             if (mines == 0) {
                 block.style.backgroundColor = "#e0dfdf";
@@ -160,8 +162,8 @@
             } else if (mines == 1) {
                 block.style.backgroundColor = "#86c3f4";
             } else {
+                // TODO сделать расцветку для всех чисел от 1 до 8
                 block.style.backgroundColor = "#86c3f4";
-
             }
         }
 
