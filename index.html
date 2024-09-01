@@ -32,7 +32,7 @@
             justify-content: center;
             align-items: center;
             font-size: 20px;
-            background-image: url(grass.png);
+            background-image: url(images/grass.png);
             background-size: 100% auto;
             color: #fff;
         }
@@ -41,6 +41,11 @@
 
 <body>
     <div id="field"></div>
+    <div>
+        <p>Время игры: <span id="timer">0</span> секунд</p>
+        <p>Количество ходов: <span id="moves">0</span></p>
+        <button id="restartButton">Перезапустить игру</button>
+    </div>
 
     <script>
         // игровое поле
@@ -102,9 +107,27 @@
                 cell.addEventListener('click', function () {
                     handleClick(this);
                 });
+                cell.addEventListener('contextmenu', function (e) {
+                    e.preventDefault();
+                    handleRightClick(this);
+                });
                 fieldDIV.appendChild(cell);
             }
         }
+
+        // таймер игры
+        let timer = 0;
+        const timerElement = document.getElementById('timer');
+        const timerInterval = setInterval(() => {
+            if (isGameActive) {
+                timer++;
+                timerElement.innerText = timer;
+            }
+        }, 1000);
+
+        // количество ходов
+        let moves = 0;
+        const movesElement = document.getElementById('moves');
 
         // клик по блоку
         function handleClick(cell) {
@@ -112,6 +135,9 @@
                 // игра закончена уже
                 return true;
             }
+
+            moves++;
+            movesElement.innerText = moves;
 
             const mines = cell.dataset.mines;
             const cellRow = parseInt(cell.dataset.i);
@@ -134,19 +160,35 @@
                 cell.innerText = mines;
                 if (checkWin()) {
                     isGameActive = false;
+                    clearInterval(timerInterval);
                     alert("Победа!");
                 }
             } else {
                 // проигрыш
                 isGameActive = false;
+                clearInterval(timerInterval);
 
                 // показ всех мин
                 const mineCells = document.querySelectorAll(`span[data-mines="*"]`);
                 for (let i = 0; i < mineCells.length; i++) {
                     const mineCell = mineCells[i];
-                    setColor(mineCell, "*");
+                    setColor(mineCell, "bomb");
                 }
+                setColor(cell, "bomb-fail");
                 alert("Потрачено :(");
+            }
+        }
+
+        // обработка правого клика для установки флага
+        function handleRightClick(cell) {
+            if (!isGameActive) {
+                return true;
+            }
+
+            if (cell.style.backgroundImage === 'url("images/bomb-flag.png")') {
+                cell.style.backgroundImage = 'url(images/grass.png)';
+            } else {
+                cell.style.backgroundImage = 'url(images/bomb-flag.png)';
             }
         }
 
@@ -166,8 +208,10 @@
             cell.style.backgroundImage = 'none';
             if (mines == 0) {
                 cell.style.backgroundColor = "#e0dfdf";
-            } else if (mines == "*") {
-                cell.style.backgroundImage = 'url(mina.png)';
+            } else if (mines == "bomb") {
+                cell.style.backgroundImage = 'url(images/bomb.png)';
+            } else if (mines == "bomb-fail") {
+                cell.style.backgroundImage = 'url(images/bomb-fail.png)';
             } else {
                 const colors = {
                     1: "#86c3f4",
@@ -211,6 +255,11 @@
             dfs(startRow, startCol);
             return result;
         }
+
+        // перезапуск игры
+        document.getElementById('restartButton').addEventListener('click', function () {
+            location.reload();
+        });
     </script>
 </body>
 
