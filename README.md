@@ -2,6 +2,25 @@
 
 Online пример: [https://ipatov.github.io/sapper/](https://ipatov.github.io/sapper/)
 
+## Запуск и сборка
+#### Установка
+```
+git clone git@github.com:Ipatov/sapper.git
+cd sapper
+npm install
+```
+
+#### Старт dev
+```
+npm run start
+```
+
+#### Сборка 
+```
+npm run build
+```
+
+
 ## Чеклист toDo. Upd: 01.09.2024
 - [x] Основная логика игры
 - [x] Конец игры обработать

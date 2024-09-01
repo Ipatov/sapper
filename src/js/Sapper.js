@@ -1,4 +1,4 @@
-class Sapper {
+export default class Sapper {
     constructor(settings) {
         // Инициализация настроек и переменных
         this.settings = settings;
@@ -153,10 +153,10 @@ class Sapper {
         if (!this.isGameActive) {
             return true;
         }
-        if (cell.style.backgroundImage === `url("${this.images.bombFlag.slice(4, -1)}")`) {
-            cell.style.backgroundImage = this.images.grass;
+        if (cell.style.backgroundImage === `url("${this.images.bombFlag}")`) {
+            cell.style.backgroundImage = `url("${this.images.grass}")`;
         } else {
-            cell.style.backgroundImage = this.images.bombFlag;
+            cell.style.backgroundImage = `url("${this.images.bombFlag}")`;
         }
     }
 
@@ -177,9 +177,9 @@ class Sapper {
         if (mines == 0) {
             cell.style.backgroundColor = "#e0dfdf";
         } else if (mines == "bomb") {
-            cell.style.backgroundImage = this.images.bomb;
+            cell.style.backgroundImage = `url("${this.images.bomb}")`;
         } else if (mines == "bomb-fail") {
-            cell.style.backgroundImage = this.images.bombFail;
+            cell.style.backgroundImage = `url("${this.images.bombFail}")`;
         } else {
             const colors = {
                 1: "#86c3f4",

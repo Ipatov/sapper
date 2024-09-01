@@ -9,8 +9,6 @@ body {
     width: 600px;
     height: 600px;
     display: grid;
-    /* grid-template-columns: repeat(10, 1fr);
-    grid-template-rows: repeat(10, 1fr); */
     border: 1px solid #000;
 }
 
@@ -26,7 +24,7 @@ body {
     justify-content: center;
     align-items: center;
     font-size: 20px;
-    background-image: url(images/grass.png);
+    background-image: url(../images/grass.png);
     background-size: 100% auto;
     color: #fff;
 }
